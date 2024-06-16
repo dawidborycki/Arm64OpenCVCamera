@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.view.Surface
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -17,7 +15,6 @@ import androidx.core.content.ContextCompat
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
-import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.imgproc.Imgproc
@@ -36,7 +33,6 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
     private val cameraPermissionRequestCode = 100
 
     private lateinit var inputMat: Mat
-    private lateinit var rotatedMat: Mat
     private lateinit var processedMat: Mat
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,7 +97,6 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
         isPreviewActive = true
 
         inputMat = Mat(height, width, CvType.CV_8UC4)
-        rotatedMat = Mat(height, width, CvType.CV_8UC4)
         processedMat = Mat(height, width, CvType.CV_8UC1)
 
         updateControls()
@@ -111,7 +106,6 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
         isPreviewActive = false
 
         inputMat.release()
-        rotatedMat.release()
         processedMat.release()
 
         updateControls()
@@ -120,20 +114,9 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
     override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame?): Mat {
         inputFrame!!.rgba().copyTo(inputMat)
 
-        // Get the current rotation of the display
-        val displayRotation = (getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
-
-        // Rotate the frame based on the display rotation
-        when (displayRotation) {
-            Surface.ROTATION_0 -> Core.rotate(inputMat, rotatedMat, Core.ROTATE_90_CLOCKWISE)
-            Surface.ROTATION_90 -> inputMat.copyTo(rotatedMat)
-            Surface.ROTATION_180 -> Core.rotate(inputMat, rotatedMat, Core.ROTATE_90_COUNTERCLOCKWISE)
-            Surface.ROTATION_270 -> Core.rotate(inputMat, rotatedMat, Core.ROTATE_180)
-        }
-
-        var matToDisplay = rotatedMat
+        var matToDisplay = inputMat
         if(checkBoxProcessing.isChecked) {
-            Imgproc.cvtColor(rotatedMat, processedMat, Imgproc.COLOR_RGBA2GRAY)
+            Imgproc.cvtColor(inputMat, processedMat, Imgproc.COLOR_RGBA2GRAY)
             Imgproc.adaptiveThreshold(
                 processedMat, processedMat, 255.0,
                 Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,

@@ -45,5 +45,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("org.opencv:opencv:4.9.0")
+    implementation("org.opencv:opencv:4.10.0")
 }
